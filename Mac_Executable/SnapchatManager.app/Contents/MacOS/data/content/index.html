@@ -10,19 +10,14 @@
 		<div class="app">
 		<h1>SnapChat Manager</h1>
 		<div class="section" id="sender">
+			<h3>Send snaps</h3>
 			<form action="http://localhost:8888/sendFile/" enctype="multipart/form-data" method="post">
 				<label>Recipient</label>
-				<br>
 				<input type="text" name="username">
-				<br>
 				<label>File</label>
-				<br>
 				<input type="file" name="upload" multiple="multiple">
-				<br>
 				<label>Is this a video?</label>
-				<br>
 				<input type="checkbox" name="isVideo">
-				<br>
 				<input type="submit" value="Upload">
 			</form>
 		</div>
