@@ -6,23 +6,38 @@
 		<script src="/script/jquery.js"></script>
 		<script src="/script/main.js"></script>
 	</head>
-	<body class="windows xp">
-		<div class="app">
-		<h1>SnapChat Manager</h1>
-		<div class="section" id="sender">
-			<h3>Send snaps</h3>
-			<form action="http://localhost:8888/sendFile/" enctype="multipart/form-data" method="post">
-				<label>Recipient</label>
-				<input type="text" name="username">
-				<label>File</label>
-				<input type="file" name="upload" multiple="multiple">
-				<label>Is this a video?</label>
-				<input type="checkbox" name="isVideo">
-				<input type="submit" value="Upload">
-			</form>
+	<body>
+		<div class="error"></div>
+		<div class="success"></div>
+		<header><h1>SnapChat Manager</h1></header>
+		<div class="appView" id="loader">
+			<img src="/assets/loader.gif" />
 		</div>
-		<div class="log">
-			
+		<div class="appView" id="main">
+			<div class="section" id="sender">
+				<h3>Send snaps</h3>
+				<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
+					<label>Recipient</label>
+					<input type="text" name="username">
+					<label>File</label>
+					<input type="file" name="upload" multiple="multiple">
+					<label>Is this a video?</label>
+					<input type="checkbox" name="isVideo">
+					<input type="submit" value="Upload">
+				</form>
+			</div>
+			<div class="log">
+				
+			</div>
+		</div>
+		<div class="appView" id="login">
+			<form action="http://localhost:8888/login/" id="loginForm" method="post">
+				<label>Username</label>
+				<input type="text" name="username" class="username">
+				<label>Password</label>
+				<input type="password" name="password" class="password">
+				<input type="submit" value="Login">
+			</form>
 		</div>
 	</body>
 </html>

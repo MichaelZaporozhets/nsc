@@ -132,23 +132,39 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.static(__dirname + "/public")); //use static files in ROOT/public folder
 
+app.all('/*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+});
+
 app.use("/sendFile/",function(req,res) {
 	if(req.method == 'POST') {
-		console.log(req.body.isVideo);
 		if(req.body.isVideo == 'on') {
 			isVideo = true;
 		};
 
-		var file = fs.createReadStream(req.files.upload.path);
-
-		file.on('open', function () {
-			var username = req.body.username;
-			upload('5',req.files.upload.name,file,[username],function() {
-				console.log('test');
-				isVideo = false;
-				res.send('uploaded image');
-			});
-		});
+		try
+		{
+			//force catch if no data
+			if(req.body.username !== '' && req.body.password !== '' && req.files.upload.name !== '') {
+				//carry on chap
+				var file = fs.createReadStream(req.files.upload.path);
+				file.on('open', function () {
+					var username = req.body.username;
+					upload('5',req.files.upload.name,file,[username],function() {
+						isVideo = false;
+						res.send('success');
+					});
+				});
+			} else {
+				res.send('fail');
+			}
+		}
+		catch(err)
+		{
+			res.send('fail');
+		}
 	} else {
 		res.writeHead(200, {'content-type': 'text/html'});
 		res.end(
@@ -162,6 +178,25 @@ app.use("/sendFile/",function(req,res) {
 		'<input type="submit" value="Upload">'+
 		'</form>'
 		);
+	}
+});
+
+
+app.get("/download",function() {
+	download(function() {
+		res.send('success');
+	});
+});
+
+app.use("/login",function(req,res) {
+	if(typeof req.body.username !== 'undefined' && typeof req.body.password !== 'undefined') {
+		client.login(req.body.username,req.body.password).then(function() {
+			res.send('success');
+		}, function(err) {
+			res.send('fail');
+		});
+	} else {
+		res.send('fail');
 	}
 });
 

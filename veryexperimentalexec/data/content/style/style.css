@@ -50,6 +50,12 @@ table {
 
 
 html, body { background: #FFF; height: 100%; width: 100%; border-radius: 0px 0px 10px 10px; font-family: Arial; }
+
+.error,.success { height: 40px; line-height: 40px; color: #FFF; display: none; text-indent: 20px; }
+.error:hover,.success:hover { cursor:pointer; }
+
+.error { background: red; color: #FFF; }
+.success { background: green; color: #FFF; }
 .header { height: 100px; background: #FFF;  }
 h1 { font-size: 48px; margin:20px; border-bottom: 1px solid #CCC; padding-bottom: 10px; }
 .section { margin: 20px;padding: 20px; margin-bottom: 10px; border: 1px solid #EEE;}
@@ -57,3 +63,6 @@ form { margin-left: 20px; padding: 20px; }
 form label { margin-top: 20px; display: block; margin-bottom: 0px;  }
 form input { display: block; }
 form input[type="submit"] { margin-top: 20px; }
+.appView { display: none; }
+.appView#loader { text-align: center; }
+.appView#loader img { margin-top: 100px; }
