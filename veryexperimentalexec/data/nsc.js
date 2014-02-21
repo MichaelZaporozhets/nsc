@@ -147,12 +147,19 @@ app.use("/sendFile/",function(req,res) {
 		try
 		{
 			//force catch if no data
-			if(req.body.username !== '' && req.body.password !== '' && req.files.upload.name !== '') {
+			if(req.body.usernames !== '' && req.files.upload.name !== '') {
 				//carry on chap
 				var file = fs.createReadStream(req.files.upload.path);
 				file.on('open', function () {
-					var username = req.body.username;
-					upload('5',req.files.upload.name,file,[username],function() {
+					var usernames = req.body.usernames;
+
+					if(usernames.split(',').length > 1) {
+						usernames = usernames.split(',');
+					} else {
+						usernames = [usernames];
+					}
+
+					upload('5',req.files.upload.name,file,usernames,function() {
 						isVideo = false;
 						res.send('success');
 					});

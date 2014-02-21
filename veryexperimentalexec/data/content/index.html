@@ -5,6 +5,7 @@
 		<link rel="stylesheet" href="style/style.css">
 		<script src="/script/jquery.js"></script>
 		<script src="/script/main.js"></script>
+		<script src="/script/dropzone.js"></script>
 	</head>
 	<body>
 		<div class="error"></div>
@@ -14,7 +15,7 @@
 			<img src="/assets/loader.gif" />
 		</div>
 		<div class="appView" id="main">
-			<div class="section" id="sender">
+			<!-- <div class="section" id="sender">
 				<h3>Send snaps</h3>
 				<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
 					<label>Recipient</label>
@@ -25,9 +26,39 @@
 					<input type="checkbox" name="isVideo">
 					<input type="submit" value="Upload">
 				</form>
-			</div>
-			<div class="log">
-				
+			</div> -->
+			<ul class="menu">
+				<li>Send</li>
+				<li>Receive</li>
+				<li>Lists</li>
+				<li>Other</li>
+			</ul>
+			<div class="clear"></div>
+			<div class="parts">
+				<div class="section" id="send">
+					<h3>Send snaps</h3>
+					<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
+						<label>Recipient List</label>
+						<select name="rec_list"></select>
+						<label>File</label>
+						<input type="file" name="upload" multiple="multiple">
+						<label>Is this a video?</label>
+						<input type="checkbox" name="isVideo">
+						<input type="submit" value="Upload">
+					</form>
+				</div>
+				<div class="section" id="receive">
+					<h3>Receive Snaps</h3>
+					<ul></ul>
+				</div>
+				<div class="section" id="lists">
+					<h3>Manage Lists</h3>
+					<ul></ul>
+				</div>
+				<div class="section" id="other">
+					<h3>Other</h3>
+					<ul></ul>
+				</div>
 			</div>
 		</div>
 		<div class="appView" id="login">
