@@ -59,10 +59,10 @@ html, body { background: #FFF; height: 100%; width: 100%; border-radius: 0px 0px
 .success { background: green; color: #FFF; }
 .header { height: 100px; background: #FFF;  }
 header { background: #EEE;border-bottom: 1px solid #CCC; padding-bottom: 10px; line-height: 30px;padding-left: 20px; padding-top: 10px; }
-header .logout { float:right; margin-right: 20px;  }
+header .logout { float:right; margin-right: 20px; line-height: 20px;  }
 h1 { font-size: 24px; width: 50%; float: left; }
 h3 { margin-top: 10px; margin-bottom: 20px; }
-.section { margin: 20px;padding: 20px; margin-bottom: 10px; border: 1px solid #EEE;}
+.section { margin: 20px;padding: 20px; margin-bottom: 10px; border: 1px solid #EEE; margin: 0px;}
 form { margin-left: 20px; }
 form label { margin-top: 20px; display: block; margin-bottom: 0px;  }
 form input { display: block; }
