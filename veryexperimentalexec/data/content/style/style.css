@@ -58,12 +58,23 @@ html, body { background: #FFF; height: 100%; width: 100%; border-radius: 0px 0px
 .error { background: red; color: #FFF; }
 .success { background: green; color: #FFF; }
 .header { height: 100px; background: #FFF;  }
-h1 { font-size: 24px; border-bottom: 1px solid #CCC; padding-bottom: 10px; line-height: 30px; padding-left: 20px; background: #EEE; padding-top: 10px; }
+header { background: #EEE;border-bottom: 1px solid #CCC; padding-bottom: 10px; line-height: 30px;padding-left: 20px; padding-top: 10px; }
+header .logout { float:right; margin-right: 20px;  }
+h1 { font-size: 24px; width: 50%; float: left; }
+h3 { margin-top: 10px; margin-bottom: 20px; }
 .section { margin: 20px;padding: 20px; margin-bottom: 10px; border: 1px solid #EEE;}
-form { margin-left: 20px; padding: 20px; }
+form { margin-left: 20px; }
 form label { margin-top: 20px; display: block; margin-bottom: 0px;  }
 form input { display: block; }
-form input[type="submit"] { margin-top: 20px; }
+form input[type="submit"] { margin-top: 20px;  }
+.user_spec { display:none; }
+input[type="text"],input[type="password"] { padding-left: 5px; padding-right: 5px; background: #FAFAFA; border: 1px solid #CCC; line-height: 30px; font-size: 14px; margin-top: 10px; }
+input[type="submit"],button { padding-left: 20px; padding-right: 20px; background: #336BA0; border: 1px solid #214377; font-size: 14px; line-height: 30px; color: #FFF; }
+input[type="submit"]:hover ,button:hover { background: #225A90; cursor:pointer; }
+
+.logout { background: red; border: 1px solid #881313; display: none; }
+.logout:hover { background: #881313; }
+
 .appView { display: none; }
 .appView#loader { text-align: center; }
 .appView#loader img { margin-top: 100px; }
@@ -75,3 +86,7 @@ form input[type="submit"] { margin-top: 20px; }
 
 .appView#main .parts .section { display: none;}
 .appView#main .parts .section.current { display: block; }
+
+.appView#main .parts .section#receive ul {margin-top: 10px;}
+.appView#main .parts .section#receive ul li { float: left; margin: 10px;}
+.appView#main .parts .section#receive ul li img { width: 100px; }

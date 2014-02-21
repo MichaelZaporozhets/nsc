@@ -1,9 +1,13 @@
 var error = function(str) {
+	$('.error,.success').hide();
+
 	$('.error').empty();
 	$('.error').html(str);
 	$('.error').show();
 };
 var success = function(str) {
+	$('.error,.success').hide();
+
 	$('.success').empty();
 	$('.success').html(str);
 	$('.success').show();
@@ -14,46 +18,88 @@ Gdata.lists = [];
 
 var populateLists = function() {
 	var finish = function() {
+		$('select').empty();
 		for(i in Gdata.lists) {
-			$('form#sendFile select').append('<option>'+Gdata.lists[i].name+'</option>');
-		}
-	}
-	$.get('../lists/set.txt',function(data) {
-		var lists = data.trim().split(',');
-		for(i in lists) {
-			if(lists[i].length > 0) {
-				var name = lists[i];
-				$.get('../lists/'+lists[i],function(data) {
-					var obj = {
-						name: name,
-						rec_list: data.trim().split(',')
-					}
-					Gdata.lists.push(obj);
-					if(i == lists.length-1) {
-						finish();
-					}
-				});
+			$('select').append('<option>'+Gdata.lists[i].name+'</option>');
+			if(i == Gdata.lists.length-1) {
+				$('.appView#main .parts .section#lists select').trigger('change');
 			}
 		}
+		$('form#sendFile select').append('<option>Username</option>');
+	}
+	$.get('http://localhost:8888/readUserData',function(data) {
+		console.log(data);
+		var list = '';
+		for(i in data.friends) {
+			list = list + data.friends[i].name+','
+		};
+
+		var obj = {
+			name: 'friends',
+			rec_list: list.trim().split(',')
+		}
+		Gdata.lists.push(obj);
+		$.get('../lists/set.txt',function(data) {
+			var lists = data.trim().split(',');
+			for(i in lists) {
+				if(lists[i].length > 0) {
+					var name = lists[i];
+					$.get('../lists/'+lists[i],function(data) {
+						var obj = {
+							name: name,
+							rec_list: data.trim().split(',')
+						}
+						Gdata.lists.push(obj);
+						if(i == lists.length-1) {
+							finish();
+						}
+					});
+				}
+			}
+		});
 	});
 }
-$(document).ready(function() {
-	populateLists();
+var populateSnaps = function() {
+	$.get( "http://localhost:8888/readImages",function(data) {
 
+		var dir = data.dir;
+		var data = data.data;
+
+
+		$('.appView#main .parts .section#receive ul').empty();
+		for(i in data) {
+			$('.appView#main .parts .section#receive ul').append('<li><img src="'+dir+data[i]+'" /></li>');
+		}
+
+	});
+};
+$(document).ready(function() {
+	$('.logout').click(function() {
+		$('.appView').hide();
+		$('.appView#login').show();
+		$(this).hide();
+		Gdata.lists = [];
+	});
 	$('.error').click(function() { $(this).hide() });
 	$('.success').click(function() { $(this).hide() });
-	// $('.appView#login').show();
-	$('.appView#main').show();
+	$('.appView#login').show();
+	// $('.appView#main').show();
 	$('form#loginForm').submit(function(e) {
 		e.preventDefault();
 		$('.appView').hide();
 		$('.appView#loader').show();
 		$.post( "http://localhost:8888/login",{ username: $('form#loginForm input[name="username"]').val(), password: $('form#loginForm input[name="password"]').val() },function(data) {
 			if(data == 'success') {
+				success('logged in successfuly :)');
 				$('.appView').hide();
 				$('.appView#main').show();
+				$('.logout').show();
+				populateSnaps();
+				populateLists();
 			} else {
 				error('Those credentials did not work');
+				$('.appView').hide();
+				$('.appView#login').show();
 			}
 		});
 	});
@@ -64,13 +110,18 @@ $(document).ready(function() {
 		var formData = new FormData($('form#sendFile')[0]);
 
 		var usernames = $('form#sendFile select').val();
-		for(i in Gdata.lists) {
-			if(Gdata.lists[i].name == usernames) {
-				usernames = Gdata.lists[i].rec_list;
+		if(usernames !== 'Username') {
+			for(i in Gdata.lists) {
+				if(Gdata.lists[i].name == usernames) {
+					usernames = Gdata.lists[i].rec_list;
+				}
 			}
+		} else {
+			usernames = [$('form#sendFile input.user_spec').val()];
 		}
+
 		formData.append("usernames", usernames.join(','));
-		
+
 		$.ajax({
 			url: 'http://localhost:8888/sendFile/',  //Server script to process data
 			type: 'POST',
@@ -106,4 +157,46 @@ $(document).ready(function() {
 		$('.appView#main .parts .section#'+where).addClass('current');
 	});
 	$('.appView#main ul.menu li:eq(0)').click();
+
+
+	$('.appView#main .parts .section#receive button.get').click(function(e) {
+		e.preventDefault();
+		$('.appView').hide();
+		$('.appView#loader').show();
+		$.get( "http://localhost:8888/download",function(data) {
+			if(data == 'success') {
+				success('Downloaded latest snaps successfuly :)');
+				populateSnaps();
+			} else {
+				error('No New Snaps');
+				populateSnaps();
+			}
+			$('.appView').hide();
+			$('.appView#main').show();
+		});
+	});
+	$('.appView#main .parts .section#receive button.refresh').click(function(e) {
+		populateSnaps();
+	});
+
+	$('.appView#main .parts .section#lists select').change(function() {
+		var whichList = $('.appView#main .parts .section#lists select').val();
+		for(i in Gdata.lists) {
+			if(Gdata.lists[i].name == whichList) {
+				whichList = Gdata.lists[i].rec_list;
+			}
+		}
+		$('.appView#main .parts .section#lists ul').empty();
+		for(i in whichList) {
+			$('.appView#main .parts .section#lists ul').append('<li>'+whichList[i]+'</li>');
+		}
+	});
+
+	$('form#sendFile select').change(function() {
+		if($('form#sendFile select').val() == 'Username') {
+			$('.user_spec').show();
+		} else {
+			$('.user_spec').hide();
+		}
+	});
 });

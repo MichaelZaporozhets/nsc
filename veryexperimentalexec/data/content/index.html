@@ -10,7 +10,7 @@
 	<body>
 		<div class="error"></div>
 		<div class="success"></div>
-		<header><h1>SnapChat Manager</h1></header>
+		<header><h1>SnapChat Manager</h1><button class="logout">Logout</button><div class="clear"></div></header>
 		<div class="appView" id="loader">
 			<img src="/assets/loader.gif" />
 		</div>
@@ -40,6 +40,7 @@
 					<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
 						<label>Recipient List</label>
 						<select name="rec_list"></select>
+						<input class="user_spec" type="text" />
 						<label>File</label>
 						<input type="file" name="upload" multiple="multiple">
 						<label>Is this a video?</label>
@@ -49,10 +50,16 @@
 				</div>
 				<div class="section" id="receive">
 					<h3>Receive Snaps</h3>
+					<button class="getSnaps get">Get Latest Snaps</button>
+					<button class="refresh">Refresh Local Snaps</button>
+					<hr>
+					<h3>Snaps</h3>
 					<ul></ul>
+					<div class="clear"></div>
 				</div>
 				<div class="section" id="lists">
 					<h3>Manage Lists</h3>
+					<select name="rec_list"></select>
 					<ul></ul>
 				</div>
 				<div class="section" id="other">

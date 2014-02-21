@@ -8,13 +8,6 @@ request = require('request'),
 nodecr = require('nodecr');
 
 
-
-// Make sure the images folder exists
-if(!fs.existsSync('./images')) {
-    fs.mkdirSync('./images');
-}
-
-
 var constants = {
 	username: 'edelman_aus',
 	password: 'Edelman00'
@@ -23,6 +16,11 @@ var constants = {
 var isVideo = false;
 
 var busy = 0;
+var getUserData = function(callback) {
+	client.login(constants.username,constants.password).then(function(data) {
+		callback(data);
+	});
+};
 var download = function(callback) {
 	client.login(constants.username,constants.password).then(function(data) {
 		console.log('successfully logged in with username: ' + constants.username);
@@ -34,52 +32,54 @@ var download = function(callback) {
 		var i = 0;
 		max = data.snaps.length;
 		if(max == 0) {
-			console.log('no snaps to download.');
-			busy = 0;
+			callback('nosnaps');
 		} else {
 			var last = false;
 			// Loop through the latest snaps
 			data.snaps.forEach(function(snap) {
-				i++;
 				// Make sure the snap item is unopened and sent to you (not sent by you)
 				if (typeof snap.sn !== 'undefined' && typeof snap.t !== 'undefined' && snap.st == 1) {
 					console.log('Saving snap from ' + snap.sn + '...');
-					console.log(i + '/' + max)
-					if(i == max) {
+					console.log(i+1 + '/' + max)
+					if(i+1 == max) {
 						last = true;
 					}
-					// Save the image to ./images/{SENDER USERNAME}_{SNAP ID}.jpg
-					var stream = fs.createWriteStream('./images/' + snap.sn + '_' + snap.id + '.jpg', { flags: 'w', encoding: null, mode: 0666 });
-					client.getBlob(snap.id).then(function(blob) {
-						blob.pipe(stream);
 
-						if(last == true) {
-							client.clear();
-							callback();
-						}
-						blob.resume();
-					});
+					var continueDown = function() {
+						var stream = fs.createWriteStream(__dirname+'/content/snaps/'+constants.username+'/'+ snap.sn+'_'+ snap.id + '.jpg', { flags: 'w', encoding: null, mode: 0666 });
+						client.getBlob(snap.id).then(function(blob) {
+							blob.pipe(stream);
+							if(last == true) {
+								client.clear();
+								callback('success');
+							} else {
+								i++;
+							}
+							blob.resume();
+						});
+					}
+
+					// Make sure the images folder exists
+					if(!fs.existsSync(__dirname+'/content/snaps/'+constants.username)) {
+					    fs.mkdir(__dirname+'/content/snaps/'+constants.username,function() {
+					    	continueDown();
+					    });
+					} else {
+						continueDown();
+					}
 				} else {
-					if(i == max) {
+					if(i+1 == max) {
+						last = true;
 						client.clear();
-						callback();
+						callback('success');
+					} else {
+						i++;
 					}
 				}
 			});
 		}
 	});
 }
-downloader = function() {
-	setInterval(function() {
-		if(busy == 0) {
-			busy = 1;
-			download(function() {
-				busy = 0;
-				console.log('downloaded all snaps..');
-			});
-		}
-	},5000);
-};
 
 var upload = function(time,filename,fileData,recipients,callback) {
 	client.login(constants.username, constants.password).then(function() {
@@ -189,9 +189,36 @@ app.use("/sendFile/",function(req,res) {
 });
 
 
-app.get("/download",function() {
-	download(function() {
-		res.send('success');
+app.get("/download",function(req,res) {
+	download(function(log) {
+		if(log == 'nosnaps') { console.log('no snaps to download') };
+		res.send(log);
+		console.log(log)
+	});
+});
+
+app.get("/readImages",function(req,res) {
+	var continueDown = function() {
+		fs.readdir(__dirname+'/content/snaps/'+constants.username+'/', function(err,files) {
+			if(err) {
+				res.send(err);
+			} else {
+				res.send({dir:'/snaps/'+constants.username+'/',data:files});
+			}
+		});
+	}
+	if(!fs.existsSync(__dirname+'/content/snaps/'+constants.username)) {
+		fs.mkdir(__dirname+'/content/snaps/'+constants.username,function() {
+			continueDown();
+		});
+	} else {
+		continueDown();
+	}
+});
+
+app.get("/readUserData",function(req,res) {
+	getUserData(function(data) {
+		res.send(data);
 	});
 });
 
@@ -199,6 +226,8 @@ app.use("/login",function(req,res) {
 	if(typeof req.body.username !== 'undefined' && typeof req.body.password !== 'undefined') {
 		client.login(req.body.username,req.body.password).then(function() {
 			res.send('success');
+			constants.username = req.body.username;
+			constants.password = req.body.password;
 		}, function(err) {
 			res.send('fail');
 		});
