@@ -73,6 +73,7 @@ var populateSnaps = function() {
 
 	});
 };
+var a = '';
 $(document).ready(function() {
 	$('.logout').click(function() {
 		$('.appView').hide();
@@ -199,4 +200,47 @@ $(document).ready(function() {
 			$('.user_spec').hide();
 		}
 	});
+
+
+	campaignRouter = function(action,data) {
+		var ajaxObj = {};
+		try
+		{
+			switch(action) {
+				case 'new' :
+					ajaxObj.action = 'new';
+					ajaxObj.data = data;
+				break;
+				case 'select' :
+					ajaxObj.action = 'select';
+					ajaxObj.data = data;
+				break;
+				case 'send':
+					ajaxObj.action = 'send';
+					ajaxObj.data = data;
+				break;
+				case 'delete':
+					ajaxObj.action = 'delete';
+					ajaxObj.data = data;
+				break;
+				default: // list all
+					ajaxObj.action = '';
+				break;
+			}
+			$.post('http://localhost:8888/campaign',ajaxObj,function(data) {
+				console.log(data)
+			});
+		}
+		catch(err)
+		{
+			console.log(err);	
+		}
+	}
+
+	test = function() {
+		campaignRouter('new',{
+			name : 'test',
+			list : 'someone'
+		});
+	}
 });

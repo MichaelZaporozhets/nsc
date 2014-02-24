@@ -5,8 +5,9 @@ var Q = require('q')
 ,util = require('util'),
 express = require('express'),
 request = require('request'),
-nodecr = require('nodecr');
+storage = require('node-persist');
 
+storage.initSync();
 
 var constants = {
 	username: 'edelman_aus',
@@ -14,8 +15,12 @@ var constants = {
 };
 
 var isVideo = false;
-
 var busy = 0;
+
+
+//LIB
+
+
 var getUserData = function(callback) {
 	client.login(constants.username,constants.password).then(function(data) {
 		callback(data);
@@ -30,51 +35,45 @@ var download = function(callback) {
 			return;
 		}
 		var i = 0;
-		max = data.snaps.length;
+		var max = data.snaps.length;
+
 		if(max == 0) {
 			callback('nosnaps');
 		} else {
 			var last = false;
+			var check = function() {
+				if(last == true) {
+					callback('success');
+				} else {
+					i++;
+				}
+			}
 			// Loop through the latest snaps
 			data.snaps.forEach(function(snap) {
-				// Make sure the snap item is unopened and sent to you (not sent by you)
-				if (typeof snap.sn !== 'undefined' && typeof snap.t !== 'undefined' && snap.st == 1) {
+				console.log(i+1 + '/' + max)
+				if(i+1 == max) {
+					last = true;
+				}
+
+				if(typeof snap.t !== 'undefined' && typeof snap.sn !== 'undefined') {
 					console.log('Saving snap from ' + snap.sn + '...');
-					console.log(i+1 + '/' + max)
-					if(i+1 == max) {
-						last = true;
-					}
-
-					var continueDown = function() {
-						var stream = fs.createWriteStream(__dirname+'/content/snaps/'+constants.username+'/'+ snap.sn+'_'+ snap.id + '.jpg', { flags: 'w', encoding: null, mode: 0666 });
-						client.getBlob(snap.id).then(function(blob) {
-							blob.pipe(stream);
-							if(last == true) {
-								client.clear();
-								callback('success');
-							} else {
-								i++;
-							}
-							blob.resume();
-						});
-					}
-
-					// Make sure the images folder exists
-					if(!fs.existsSync(__dirname+'/content/snaps/'+constants.username)) {
-					    fs.mkdir(__dirname+'/content/snaps/'+constants.username,function() {
-					    	continueDown();
-					    });
-					} else {
-						continueDown();
-					}
+					var stream = fs.createWriteStream(__dirname+'/content/snaps/'+constants.username+'/'+ snap.sn+'_'+ snap.id + '.jpg', { flags: 'w', encoding: null, mode: 0666 });
+					client.getBlob(snap.id).then(function(blob) {
+						blob.pipe(stream);
+						check();
+						blob.resume();
+					});
 				} else {
-					if(i+1 == max) {
-						last = true;
-						client.clear();
-						callback('success');
-					} else {
-						i++;
-					}
+					console.log('you have a snap that is pending for '+snap.rp);
+					check();
+					var stream = fs.createWriteStream(__dirname+'/content/snaps/'+constants.username+'/'+ snap.rp+'_'+ snap.id + '.png', { flags: 'w', encoding: null, mode: 0666 },function() {
+						check();
+					});
+					client.getBlob(snap.id).then(function(blob) {
+						blob.pipe(stream);
+						check();
+						blob.resume();
+					});
 				}
 			});
 		}
@@ -119,6 +118,88 @@ var upload = function(time,filename,fileData,recipients,callback) {
 		});
 };
 
+
+
+
+
+//NEWLIB
+var campaigns = {};
+var campaignManager = function() {
+	var saveChanges = function() {
+		storage.setItem('campaigns',campaigns);
+	}
+	this.newCampaign = function(name,list,callback) {
+		var response = {
+			status : 'success',
+			data : {}
+		}
+		console.log('name :' +name)
+		if(typeof campaigns[name] == 'undefined') {
+			list = '';
+			var newCampaign = new Campaign(name,list);
+			saveChanges();
+			response.data = newCampaign.data();
+			callback(response);
+		} else {
+			response.status = 'fail: that campaign name has already been used.';
+			callback(response);
+		}
+	}
+	this.duplicateCampaign = function(callback) {
+		saveChanges();
+	}
+	this.listCampaigns = function(callback) {
+		
+	}
+	this.getCampaign = function() {
+		
+	}
+	this.editCampaign = function() {
+		saveChanges();
+	}
+	this.deleteCampaign = function(callback) {
+		var response = {
+			status : 'success',
+			data : {}
+		}
+		try {
+			if(typeof campaigns[name] !== 'undefined') {
+				campaigns[name].delete();
+				callback(response);
+				saveChanges();
+			} else {
+				throw "The campaign selected doesn't exist.";
+			}
+		} catch(err) {
+			console.log(err);
+			response.status = 'fail:'+err;
+			callback(response);
+		}
+	}
+	console.log('initialized campaign manager');
+}
+campaignManager = new campaignManager();
+var Campaign = function(name,list) {
+	var $$this = this;
+	$$this.name = name;
+	$$this.list = list;
+	this.data = function() {
+		var data = {
+			meow : 'meow',
+			name : $$this.name,
+			list : $$this.list
+		}
+		return data;
+	}
+	this.remove = function() {
+		campaigns[name];
+	};
+}
+
+
+
+
+//NETCODE
 
 
 var fs = require("fs");
@@ -207,13 +288,7 @@ app.get("/readImages",function(req,res) {
 			}
 		});
 	}
-	if(!fs.existsSync(__dirname+'/content/snaps/'+constants.username)) {
-		fs.mkdir(__dirname+'/content/snaps/'+constants.username,function() {
-			continueDown();
-		});
-	} else {
-		continueDown();
-	}
+	continueDown();
 });
 
 app.get("/readUserData",function(req,res) {
@@ -228,6 +303,10 @@ app.use("/login",function(req,res) {
 			res.send('success');
 			constants.username = req.body.username;
 			constants.password = req.body.password;
+			// Make sure the images folder exists
+			if(!fs.existsSync(__dirname+'/content/snaps/'+constants.username)) {
+				fs.mkdir(__dirname+'/content/snaps/'+constants.username);
+			}
 		}, function(err) {
 			res.send('fail');
 		});
@@ -235,6 +314,38 @@ app.use("/login",function(req,res) {
 		res.send('fail');
 	}
 });
+
+
+
+app.use("/campaign/",function(req,res) {
+	var action = req.body.action;
+	switch(action) {
+		case "new":
+			campaignManager.newCampaign(req.body.data.name,req.body.data.list,function(response) {
+				if(response.status == 'success') {
+					res.send(response.data);
+				} else {
+					res.send(response);
+				}
+			});
+		break;
+		case "delete":
+			campaignManager.deleteCampaign(name);
+		break;
+		default:
+			campaignManager.listCampaigns(function(response) {
+				if(response.status == 'success') {
+					res.send(response.data);
+				} else {
+					res.send(response);
+				}
+			});
+		break;
+	}
+});
+
+
+
 
 app.listen(port);
 console.log('Started node snapchat-server');

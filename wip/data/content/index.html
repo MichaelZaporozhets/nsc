@@ -15,26 +15,20 @@
 			<img src="/assets/loader.gif" />
 		</div>
 		<div class="appView" id="main">
-			<!-- <div class="section" id="sender">
-				<h3>Send snaps</h3>
-				<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
-					<label>Recipient</label>
-					<input type="text" name="username">
-					<label>File</label>
-					<input type="file" name="upload" multiple="multiple">
-					<label>Is this a video?</label>
-					<input type="checkbox" name="isVideo">
-					<input type="submit" value="Upload">
-				</form>
-			</div> -->
 			<ul class="menu">
 				<li>Send</li>
+				<li>Sent</li>
 				<li>Receive</li>
 				<li>Lists</li>
 				<li>Other</li>
 			</ul>
 			<div class="clear"></div>
 			<div class="parts">
+				<div class="section" id="sent">
+					<h3>Sent Snaps ( and status )</h3>
+					<ul></ul>
+					<div class="clear"></div>
+				</div>
 				<div class="section" id="send">
 					<h3>Send snaps</h3>
 					<form action="http://localhost:8888/sendFile/" id="sendFile" enctype="multipart/form-data" method="post">
