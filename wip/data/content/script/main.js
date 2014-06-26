@@ -65,44 +65,68 @@ var populateSnaps = function() {
 		var dir = data.dir;
 		var data = data.data;
 
-
-		$('.appView#main .parts .section#receive ul').empty();
+		var $ul = $('.appView#main .parts .section#receive ul');
 		for(i in data) {
-			$('.appView#main .parts .section#receive ul').append('<li><img src="'+dir+data[i]+'" /></li>');
+			if($ul.find('img#'+data[i].split('.')[0]).size() == 0) {
+				$ul.append('<li><img id="'+data[i].split('.')[0]+'" src=".'+dir+data[i]+'" /></li>');
+			}
 		}
-
 	});
 };
+var login = function() {
+	$('.appView').hide();
+	$('.appView#loader').show();
+
+	var username = $('form#loginForm input[name="username"]').val();
+	var password = $('form#loginForm input[name="password"]').val();
+
+	if(localStorage.getItem("creds")) {
+		var creds = localStorage.getItem("creds");
+		username = creds.split(':')[0];
+		password = creds.split(':')[1];
+	}
+
+	$.post( "http://localhost:8888/login",{ username: username, password: password },function(data) {
+		if(data == 'success') {
+			localStorage.setItem("creds", username+':'+password);
+			success('logged in successfuly :)');
+			$('.appView').hide();
+			$('.appView#main').show();
+			$('.logout').show();
+			populateSnaps();
+			populateLists();
+		} else {
+			error('Those credentials did not work');
+			$('.appView').hide();
+			$('.appView#login').show();
+		}
+	});
+}
 var a = '';
 $(document).ready(function() {
+	$('.appView').hide();
+	if(localStorage.getItem("creds")) {
+		login();
+	} else {
+		$('.appView#login').show();
+	}
 	$('.logout').click(function() {
 		$('.appView').hide();
 		$('.appView#login').show();
 		$(this).hide();
 		Gdata.lists = [];
 	});
+
+	setInterval(function() {
+		populateSnaps();
+	},5000);	
+
 	$('.error').click(function() { $(this).hide() });
 	$('.success').click(function() { $(this).hide() });
-	$('.appView#login').show();
 	// $('.appView#main').show();
 	$('form#loginForm').submit(function(e) {
 		e.preventDefault();
-		$('.appView').hide();
-		$('.appView#loader').show();
-		$.post( "http://localhost:8888/login",{ username: $('form#loginForm input[name="username"]').val(), password: $('form#loginForm input[name="password"]').val() },function(data) {
-			if(data == 'success') {
-				success('logged in successfuly :)');
-				$('.appView').hide();
-				$('.appView#main').show();
-				$('.logout').show();
-				populateSnaps();
-				populateLists();
-			} else {
-				error('Those credentials did not work');
-				$('.appView').hide();
-				$('.appView#login').show();
-			}
-		});
+		login();
 	});
 	$('form#sendFile').submit(function(e) {
 		e.preventDefault();

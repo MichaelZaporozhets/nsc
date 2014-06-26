@@ -101,7 +101,7 @@ e.postCall = function postCall(endpoint, post_data, param1, param2, raw, cb) {
             }
             res.pipe(sink().on('data', function(resp) {
                 if(res.statusCode==200)
-                    resolve(resp)
+                    resolve(resp);
                 else
                     reject(resp);
             }));
@@ -123,17 +123,17 @@ e.login = function login(username, password, cb) {
         password: password,
         timestamp: ts
     }, static_token, ts)
-	.then(function(data) {
+    .then(function(data) {
             var resp = JSON.parse(data);
             if(resp.auth_token) return(resp);
-            else throw(resp)
-	}).nodeify(cb);
+            else throw(resp);
+    }).nodeify(cb);
 };
 
 /**
  * Get current state and optionally update it
  * @param  {String}  username
- * @param  {String}  auth_token 
+ * @param  {String}  auth_token
  * @param  {Object}  json        An object countaining fields to update.
  * @return {Promise} The current state
  */
@@ -142,7 +142,7 @@ e.sync = function(username, auth_token, json, cb) {
     return e.postCall('/ph/sync', {
         username: username,
         timestamp: ts,
-        json: JSON.stringify(json||{}),
+        json: json,
         auth_token: auth_token
     }, auth_token, ts)
         .then(function(data) {
@@ -164,15 +164,15 @@ e.getBlob = function(username, auth_token, id, cb) {
         timestamp: ts,
         username: username,
     }, auth_token, ts, true)
-	.then(function(stream) {
+    .then(function(stream) {
             if(stream.statusCode != 200)
-		return Q.promise(function(resolve, reject) {
-		    stream.setEncoding('ascii');
-		    stream.pipe(sink().on('data', function(resp) {
-			reject(resp);
-		    }));
-		    stream.resume();
-		});
+        return Q.promise(function(resolve, reject) {
+            stream.setEncoding('ascii');
+            stream.pipe(sink().on('data', function(resp) {
+            reject(resp);
+            }));
+            stream.resume();
+        });
             if (stream.headers['content-type'] !== 'application/octet-stream')
                 return stream;
 
@@ -181,7 +181,7 @@ e.getBlob = function(username, auth_token, id, cb) {
               if(data !== undefined)
               decrypt.update(data);
               }).on('end', function() {
-              var final = decrypt.final(); 
+              var final = decrypt.final();
               });*/
             var decrypt = spawn('openssl', ['enc', '-d', '-K', '4d3032636e5135314a69393776775434', '-aes-128-ecb']);
             stream.pipe(decrypt.stdin);
@@ -232,13 +232,13 @@ e.upload = function upload(username, auth_token, stream, isVideo, cb) {
                 resolve(mediaId);
             }));
         });
-	form.on('data', function(data) {
-	    req.write(data);
-	}).on('end', function(end) {
-	    req.end(end);
-	})
+    form.on('data', function(data) {
+        req.write(data);
+    }).on('end', function(end) {
+        req.end(end);
+    });
     }).nodeify(cb);;
-}
+};
 
 /**
  * Send a blob to a friend.
@@ -259,7 +259,7 @@ e.send = function send(username, auth_token, mediaId, friends, time, cb) {
     };
     if(typeof time != 'undefined') postData.time = time;
     return e.postCall('/ph/send', postData, auth_token,ts).nodeify(cb);
-}
+};
 
 /**
  * Add a friend
@@ -276,9 +276,9 @@ e.addFriend = function addFriend(username, auth_token, friend) {
         action: 'add',
         friend: friend
     }, auth_token, ts)
-	.then(function(data) {
+    .then(function(data) {
             return JSON.parse(data);
-	});
+    });
 };
 
 /**
@@ -298,9 +298,9 @@ e.rename = function rename(username, auth_token, friend, newName, cb) {
         friend: friend,
         display: newName
     }, auth_token, ts)
-	.then(function(data) {
+    .then(function(data) {
             return JSON.parse(data);
-	}).nodeify(cb);
+    }).nodeify(cb);
 };
 
 /**
@@ -318,9 +318,9 @@ e.unfriend = function(username, auth_token, friend, cb) {
         action: 'delete',
         friend: friend,
     }, auth_token, ts)
-	.then(function(data) {
+    .then(function(data) {
             return JSON.parse(data);
-	}).nodeify(cb);
+    }).nodeify(cb);
 };
 
 /**
@@ -337,25 +337,25 @@ e.register = function register(email, password, username, cb) {
         password: password,
         email: email
     }, static_token, ts)
-	.then(function(data) {
+    .then(function(data) {
             var resp = JSON.parse(JSON.parse(data));
             var token = resp.token;
             if(typeof token === 'undefined')
-		throw resp;
+        throw resp;
 
             var ts = Date.now().toString();
             return e.postCall('/ph/registeru', {
-		timestamp: ts,
-		email: email,
-		username: username,
+        timestamp: ts,
+        email: email,
+        username: username,
             }, static_token, ts)
-		.then(function(data) {
-		    var resp = JSON.parse(data);
-		    if(data.auth_token === 'undefined')
-			throw resp;
-		    return resp;
-		});
-	}).nodeify(cb);
+        .then(function(data) {
+            var resp = JSON.parse(data);
+            if(data.auth_token === 'undefined')
+            throw resp;
+            return resp;
+        });
+    }).nodeify(cb);
 };
 
 /**
@@ -370,7 +370,7 @@ e.clear = function clear(username, auth_token, cb) {
         timestamp: ts,
         username: username
     }, auth_token, ts).nodeify(cb);
-}
+};
 
 /**
  * Update your email

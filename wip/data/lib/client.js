@@ -32,7 +32,7 @@ var sc = require('./snapchat');
 
 var Client = module.exports = function() {
     if(!(this instanceof Client)) return new Client();
-}
+};
 
 /**
  * @param  {String} username
@@ -41,7 +41,6 @@ var Client = module.exports = function() {
  */
 
 Client.prototype.login = function(username, password, cb) {
-    console.log('logging in...');
     var self = this;
     return sc.login(username, password).then(function(data) {
         self.username = data.username;
@@ -64,12 +63,12 @@ Client.prototype.login = function(username, password, cb) {
 Client.prototype.register = function register(email, password, username, cb) {
     var self = this;
     return sc.register(email, password, username)
-	.then(function(syncData) {
+    .then(function(syncData) {
             console.log(typeof syncData);
             self.username = username;
             self.auth_token = syncData.auth_token;
             return syncData;
-	}).nodeify(cb);
+    }).nodeify(cb);
 };
 
 /**
@@ -85,13 +84,8 @@ Client.prototype.logout = function(cb) {
  * Sync the data. You need to have an auth_token set first.
  * @return {Promise} The sync data.
  */
-Client.prototype.sync = function(jsonOrCb, cb) {
+Client.prototype.sync = function(username, auth_token, json, cb) {
     var self = this;
-    var json = {};
-    if(typeof jsonOrCb == 'object')
-        json = jsonOrCb;
-    else(typeof jsonOrCb == 'function')
-        cb = jsonOrCb;
     return sc.sync(this.username, this.auth_token, json).then(function(data) {
         self.auth_token = data.auth_token;
         self.lastSync = {
@@ -120,7 +114,7 @@ Client.prototype.getBlob = function(id, cb) {
  */
 Client.prototype.upload = function(stream, isVideo, cb) {
     return sc.upload(this.username, this.auth_token, stream, isVideo).nodeify(cb);
-}
+};
 
 /** Send the snap to people
  * @param  {String}       mediaId the snap to send.
@@ -128,9 +122,11 @@ Client.prototype.upload = function(stream, isVideo, cb) {
  * @param  {Number}       time    How long (in seconds) a snap should be visible. This should only be set if the snap is a picture.
  */
 Client.prototype.send = function(mediaId,friends,timeOrCb,cb) {
-    var time = 20;
+    var time;
     if(typeof timeOrCb === 'function') {
         cb = timeOrCb;
+    } else {
+        time = timeOrCb;
     }
     return sc.send(this.username,this.auth_token,mediaId,friends,time).nodeify(cb);
 };
@@ -155,7 +151,7 @@ Client.prototype.addFriend = function(friend, cb) {
 Client.prototype.rename = function(friend, newName, cb) {
     if (typeof this.auth_token === "undefined") return;
     var self = this;
-    return sc.rename(this.username, this.auth_token, friend, newName).nodeify(cb)
+    return sc.rename(this.username, this.auth_token, friend, newName).nodeify(cb);
 };
 
 /**
@@ -183,7 +179,7 @@ Client.prototype.clear = function(cb) {
  */
 Client.prototype.privacy = function(only_friends, cb) {
     return sc.privacy(this.username, this.auth_token, only_friends).nodeify(cb);
-}
+};
 
 /**
  * Update your email
