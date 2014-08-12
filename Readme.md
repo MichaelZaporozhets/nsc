@@ -1,4 +1,3 @@
-Snapchat-server
-==========
+go crayzzay
 
-original lib code pulled from https://github.com/nykac/node-snapchat;
+run: `node nsc`
